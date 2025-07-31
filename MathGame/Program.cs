@@ -2,8 +2,11 @@
 using System.Numerics;
 
 string operation;
+string difficulty;
 int a;
 int b;
+InputOptions operationChosen;
+DifficultyLevel difficultyLevel;
 
 List<GameResult> gameResults = new List<GameResult>();
 
@@ -12,17 +15,30 @@ while (true)
     MainMenu();
     Random random = new Random();
 
-    switch (operation)
+    switch (operationChosen)
     {
-        case "addition":
+        case InputOptions.Addition:
             {
-                a = random.Next(50);
-                b = random.Next(50);
-
+                if (difficultyLevel == DifficultyLevel.Easy)
+                {
+                    a = random.Next(50);
+                    b = random.Next(50);
+                }
+                else if (difficultyLevel == DifficultyLevel.Medium)
+                {
+                    a = random.Next(200);
+                    b = random.Next(200);
+                }
+                else
+                {
+                    a = random.Next(500);
+                    b = random.Next(500);
+                }
+               
                 PerformOperation($"Sum of {a} + {b}", a + b);
                 break;
             }
-        case "substraction":
+        case InputOptions.Substraction:
             {
                 do
                 {
@@ -32,9 +48,8 @@ while (true)
 
                 PerformOperation($"Difference of {a} - {b}", a - b);
                 break;
-
             }
-        case "multiplication":
+        case InputOptions.Multiplication:
             {
                 a = random.Next(2,15);
                 b = random.Next(2,15);
@@ -42,7 +57,7 @@ while (true)
                 PerformOperation($"Product of {a} * {b}", a * b);
                 break;
             }
-        case "division":
+        case InputOptions.Division:
             {
                 do
                 {
@@ -53,11 +68,11 @@ while (true)
                 PerformOperation($"Qotient of {a} / {b}", a / b);
                 break;
             }
-        case "showgamehistory":
+        case InputOptions.ShowGameHistory:
             {
-                foreach (var result in  gameResults) 
+                foreach (var entry in gameResults) 
                 {
-                    Console.WriteLine(result);
+                    Console.WriteLine(entry);
                 }
                 Console.WriteLine();
                 break;
@@ -68,16 +83,58 @@ while (true)
 
 void MainMenu()
 {
-    bool validInput = false;
-
+    bool validOperation = false;
+    bool validDifficulty = false;
     do
     {
-        Console.WriteLine("Choose an operation: 1) Addition \t2) Substraction \t3) Multiplication \t4) Division \t5) Show Game History");
+        Console.WriteLine("Choose difficulty: 1) Easy\n2) Medium\n3) Hard");
+        Console.WriteLine();
+        difficulty = Console.ReadLine();
+
+        if (int.TryParse(difficulty, out int number) && Enum.IsDefined(typeof(DifficultyLevel), number))
+        {
+            difficultyLevel = (DifficultyLevel)number;
+            validDifficulty = true;
+        }
+        else if (Enum.TryParse<DifficultyLevel>(difficulty, ignoreCase: true, out difficultyLevel))
+        {
+            validDifficulty = true;
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Try again.\n");
+        }
+
+    } while (!validDifficulty);
+
+    do
+    {   
+        Console.WriteLine("Choose an operation: 1) Addition\n2) Substraction\n3) Multiplication\n4) Division\n5) Show Game History");
         Console.WriteLine();
         operation = Console.ReadLine();
-    } while (operation == null || !Enum.TryParse<InputOptions>(operation, ignoreCase: true, out var result));
+
+        if (int.TryParse(operation, out int number) && Enum.IsDefined(typeof(InputOptions), number))
+        {
+            operationChosen = (InputOptions)number;
+            validOperation = true;
+        }
+        else if (Enum.TryParse<InputOptions>(operation, ignoreCase: true, out operationChosen))
+        {
+            validOperation = true;
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Try again.\n");
+        }
+    } while (!validOperation);
+
+    Console.WriteLine();
 }
 
+void GenerateTask()
+{
+
+}
 void PerformOperation (string taskDescription, int correctAnswer)
 {
     string input;
@@ -103,6 +160,7 @@ void PerformOperation (string taskDescription, int correctAnswer)
     Console.WriteLine();
 
 }
+
 class GameResult
 {
     public string Task { get; set; }
@@ -124,10 +182,9 @@ enum InputOptions
     ShowGameHistory
 }
 
-enum ResultOptions
+enum DifficultyLevel
 {
-    Sum,
-    Difference,
-    Product,
-    Quotient
+    Easy = 1,
+    Medium,
+    Hard
 }
